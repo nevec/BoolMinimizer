@@ -1,8 +1,17 @@
 #include <iostream>
 #include <vector>
 
-int main() {
-    using namespace std;
+#include "tokens.h"
 
+using namespace std;
+
+int main() {
+
+    string s;
+    cin >> s;
+    Tokenizer tokenizer;
+    tokenizer.tokenize(s);
+
+    cout << tokenizer << endl;
     return 0;
 }

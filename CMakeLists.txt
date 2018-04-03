@@ -3,4 +3,4 @@ project(Kursach)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_FLAGS_DEBUG "-D_GLIBCXX_DEBUG -fsanitize=address")
-add_executable(Kursach main.cpp)
+add_executable(Kursach main.cpp tokens.h)
