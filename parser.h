@@ -11,6 +11,8 @@ using namespace std;
 class Node {
 public:
     virtual bool evaluate(const map<string, bool>& interpret) = 0;
+
+    virtual void print() = 0;
 };
 
 class Letter : public Node {
@@ -27,6 +29,11 @@ public:
     bool evaluate(const map<string, bool>& interpret) override
     {
         return interpret.find(name)->second;
+    }
+
+    void print() override
+    {
+        cerr << name;
     }
 };
 
@@ -65,6 +72,18 @@ public:
 
         return val;
     }
+
+    void print() override
+    {
+        cerr << "[ " << operation << " ";
+        for (const auto& x: args) {
+            x->print();
+            cerr << " ";
+        }
+        cerr << "]";
+    }
 };
+
+unique_ptr<Node> parse(Tokenizer& t);
 
 #endif //KURSACH_PARSER_H
