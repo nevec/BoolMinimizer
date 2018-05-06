@@ -4,6 +4,8 @@
 #include <map>
 #include <string>
 #include <memory>
+#include <bitset>
+#include <set>
 #include "tokens.h"
 
 using namespace std;
@@ -12,7 +14,10 @@ class Node {
 public:
     virtual bool evaluate(const map<string, bool>& interpret) = 0;
 
+    virtual void addVariable(set<string>& variables) = 0;
     virtual void print() = 0;
+
+    virtual ~Node() = default;
 };
 
 class Letter : public Node {
@@ -34,6 +39,11 @@ public:
     void print() override
     {
         cerr << name;
+    }
+
+    void addVariable(set<string>& variables) override
+    {
+        variables.insert(name);
     }
 };
 
@@ -81,6 +91,12 @@ public:
             cerr << " ";
         }
         cerr << "]";
+    }
+
+    void addVariable(set<string>& variables) override
+    {
+        for (const auto& x: args)
+            x->addVariable(variables);
     }
 };
 

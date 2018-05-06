@@ -2,16 +2,18 @@
 #include <vector>
 #include "tokens.h"
 #include "parser.h"
+#include "minimizer.h"
+#include <bitset>
 using namespace std;
 
 int main() {
     string s;
-    cin >> s;
-    Tokenizer tokenizer;
-    tokenizer.tokenize(s);
+    int n;
+    cin >> n >> s;
 
-    //cout << tokenizer << endl;
-    auto tree = parse(tokenizer);
-    tree->print();
+    TruthTable t(s, n);
+    auto primes = getPrimeImplicants(t);
+    for (auto p:primes)
+        cout << p << endl;
     return 0;
 }
