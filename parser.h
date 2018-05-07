@@ -69,7 +69,12 @@ public:
         bool val = args[0]->evaluate(interpret);
         if (operation=="!")
             val = !val;
-
+        if (operation=="-") {
+            if (args.size()!=2)
+                throw invalid_argument("implication is binary");
+            val = !(args[0]->evaluate(interpret)) || args[1]->evaluate(interpret);
+            return val;
+        }
         for (int i = 1; i<args.size(); ++i) {
             bool v = args[i]->evaluate(interpret);
             if (operation=="v")

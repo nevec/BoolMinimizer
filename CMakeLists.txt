@@ -6,6 +6,4 @@ set(CMAKE_CXX_FLAGS_DEBUG "-D_GLIBCXX_DEBUG")
 
 add_executable(Kursach main.cpp parser.cpp tokens.h parser.h tokens.cpp minimizer.h minimizer.cpp)
 
-IF (CMAKE_BUILD_TYPE MATCHES Release)
-    set_target_properties(Kursach PROPERTIES LINK_FLAGS "-static")
-ENDIF ()
+set_target_properties(Kursach PROPERTIES LINK_FLAGS "-static")

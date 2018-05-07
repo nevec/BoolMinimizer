@@ -63,13 +63,13 @@ public:
             else if (isspace(ch)) {
                 continue;
             }
-            else if (ch=='v' || ch=='^' || ch=='!' || ch=='@') {
+            else if (ch=='v' || ch=='^' || ch=='!' || ch=='@' || ch=='-') {
                 string op;
                 op += ch;
                 tokens.emplace_back(TokenType::Operation, op);
             }
             else {
-                throw invalid_argument("");
+                throw invalid_argument("unknown character");
             }
         }
     }

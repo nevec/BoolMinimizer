@@ -1,5 +1,4 @@
 #include "parser.h"
-#include <memory>
 
 using namespace std;
 
@@ -89,7 +88,7 @@ unique_ptr<Node> parseExpression(Tokenizer& t)
 unique_ptr<Node> parse(Tokenizer& t)
 {
     if (!t.hasNext())
-        return unique_ptr<Node>();
+        throw invalid_argument("empty string");
 
     auto result = parseExpression(t);
     if (t.hasNext())

@@ -1,5 +1,6 @@
 #include "minimizer.h"
 #include <iterator>
+
 using namespace std;
 
 TruthTable createTable(const unique_ptr<Node>& root)
@@ -44,16 +45,14 @@ vector<Implicant> getFDNF(const TruthTable& t) //  full disjunctive normal form
     return fdnf;
 }
 
-vector<Implicant> getPrimeImplicants(const TruthTable& t)
+vector<Implicant> getPrimeImplicants(const vector<Implicant>& fdnf, size_t n)
 {
-    vector<Implicant> start(getFDNF(t));
+    vector<Implicant> start(fdnf);
     vector<Implicant> next;
 
     vector<Implicant> prime;
 
     while (true) {
-        int n = t.getVars().size();
-
         vector<int> count(n+1);
         vector<bool> excluded(start.size());
 
@@ -92,6 +91,7 @@ vector<Implicant> getPrimeImplicants(const TruthTable& t)
         sort(start.begin(), start.end());
         auto ptr = unique(start.begin(), start.end());
         start.erase(ptr, start.end());
+
         sort(start.begin(), start.end(), [](const Implicant& a, const Implicant& b) {
             return a.countOnes()<b.countOnes();
         });
@@ -107,7 +107,7 @@ set<int> make_union(const set<int>& x, const set<int>& y)
     return xy;
 }
 
-set<set<int>> concatenation(set<set<int>> a, set<set<int>> b)
+set<set<int>> concatenation(const set<set<int>>& a, const set<set<int>>& b)
 {
     set<set<int>> result;
     for (auto x:a) {
@@ -132,14 +132,11 @@ set<set<int>> concatenation(set<set<int>> a, set<set<int>> b)
     return result;
 }
 
-vector<vector<Implicant>> PetricksMethod(const TruthTable& t)
+vector<vector<Implicant>> PetricksMethod(const vector<Implicant>& fdnf, const vector<Implicant>& prime)
 {
-    vector<Implicant> fdnf = getFDNF(t);
-    vector<Implicant> prime = getPrimeImplicants(t);
-
     set<set<set<int>>> expr;
 
-    for (auto i:fdnf) {
+    for (const auto& i:fdnf) {
         set<set<int>> mult;
         int index = 0;
         for (auto p:prime) {
@@ -151,14 +148,15 @@ vector<vector<Implicant>> PetricksMethod(const TruthTable& t)
     }
     while (expr.size()>1) {
         auto a = *expr.begin();
-        auto b = *(++expr.begin());
-        expr.erase(expr.begin(), ++ ++expr.begin());
+        auto b = *next(expr.begin());
+        expr.erase(expr.begin(), next(next(expr.begin())));
 
         auto c = concatenation(a, b);
         expr.insert(c);
     }
     vector<vector<Implicant>> final;
-    for (auto x: *expr.begin()) {
+
+    for (const auto& x: *expr.begin()) {
         vector<Implicant> finalForm;
         for (auto val:x)
             finalForm.push_back(prime[val]);
@@ -166,4 +164,62 @@ vector<vector<Implicant>> PetricksMethod(const TruthTable& t)
     }
 
     return final;
+}
+
+vector<vector<Implicant>> minimize(const TruthTable& t)
+{
+    auto fdnf = getFDNF(t);
+    if (fdnf.empty())
+        return vector<vector<Implicant>>(1);
+
+    auto prime = getPrimeImplicants(fdnf, t.getVars().size());
+
+    return PetricksMethod(fdnf, prime);
+}
+
+void prettyPrint(const vector<Implicant>& v, const set<string>& vars, ostream& o)
+{
+    if (v.empty())
+        o << "0";
+
+    for (int i = 0; i<v.size(); ++i) {
+        int k = count_if(v[i].state.begin(), v[i].state.end(), [](int x) { return x==1 || x==0; });
+
+        if (k==0)
+            o << "1";
+        else {
+            int kk = 0;
+            if (k>1)
+                o << "(";
+
+            auto var_name = vars.begin();
+
+            for (int j = 0; j<v[i].state.size(); ++j) {
+                int val = v[i].state[j];
+
+                if (val==1) {
+                    o << *var_name << ((kk!=k-1) ? " ^ " : "");
+                    ++kk;
+                }
+                else if (val==0) {
+                    o << "!" << *var_name << ((kk!=k-1) ? " ^ " : "");
+                    ++kk;
+                }
+                ++var_name;
+            }
+            if (k>1)
+                o << ")";
+            if (i!=v.size()-1)
+                o << " v ";
+        }
+    }
+
+}
+
+int totalLength(const vector<Implicant>& v)
+{
+    int sum = 0;
+    for (const auto& x: v)
+        sum += x.countOnes();
+    return sum;
 }

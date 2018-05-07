@@ -1,6 +1,7 @@
 #ifndef KURSACH_MINIMIZER_H
 #define KURSACH_MINIMIZER_H
 
+#include <utility>
 #include <vector>
 #include <set>
 #include <string>
@@ -16,18 +17,47 @@ private:
     set<string> vars;
     vector<bool> table;
 public:
-    TruthTable(const set<string>& vars, const vector<bool>& table)
-            :vars(vars), table(table) { }
+    TruthTable() = default;
 
-    TruthTable(const string& s, int n)
-            :table(1 << n), vars()
+    TruthTable(set<string> vars, vector<bool> table)
+            :vars(move(vars)), table(move(table)) { }
+
+    TruthTable(const unique_ptr<Node>& root)
     {
+        root->addVariable(vars);
+        size_t n = vars.size();
+        size_t nInterpr = (size_t) 1 << n;
+
+        table.resize(nInterpr);
+
+        map<string, bool> interpretation;
+        for (size_t i = 0; i<nInterpr; ++i) {
+            size_t k = 0;
+            for (const auto& var: vars) {
+                interpretation[var] = bool(i & ((size_t) 1 << k));
+                ++k;
+            }
+            table[i] = root->evaluate(interpretation);
+        }
+    }
+
+    TruthTable(const string& s)
+    {
+        int n;
+        for (n = 1; (1 << n)<s.size(); ++n);
+        if ((1 << n)!=s.size())
+            throw invalid_argument("wrong format");
+
+        table.resize((size_t) (1U << n));
+
         for (int i = 0; i<n; ++i)
             vars.insert(string("x")+to_string(i+1));
 
-        for (int i = 0; i<(1 << n); ++i) {
-            if (s.at(i)=='1')
+        for (int i = 0; i<s.size(); ++i) {
+            if (s[i]=='1')
                 table[i] = true;
+            else if (s[i]!='0')
+                throw invalid_argument("wrong format");
         }
     }
 
@@ -46,7 +76,7 @@ class Implicant {
 private:
     vector<int> state;
 public:
-    Implicant(int s, int n)
+    Implicant(size_t s, size_t n)
             :state(n)
     {
         for (int i = 0; i<n; ++i)
@@ -110,16 +140,17 @@ public:
         return false;
     }
 
+    friend void prettyPrint(const vector<Implicant>& v, const set<string>& vars, ostream& o);
     bool operator==(const Implicant& rhs) const
     {
         return !(*this<rhs) && !(rhs<*this);
     }
 };
 
-TruthTable createTable(const unique_ptr<Node>& root);
+void prettyPrint(const vector<Implicant>& v, const set<string>& vars, ostream& o);
 
-vector<Implicant> getPrimeImplicants(const TruthTable& t);
+vector<vector<Implicant>> minimize(const TruthTable& t);
 
-vector<vector<Implicant>> PetricksMethod(const TruthTable& t);
+int totalLength(const vector<Implicant>& v);
 
 #endif //KURSACH_MINIMIZER_H
