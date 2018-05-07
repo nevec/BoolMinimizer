@@ -1,7 +1,5 @@
 #include "minimizer.h"
-#include <cmath>
-#include <algorithm>
-
+#include <iterator>
 using namespace std;
 
 TruthTable createTable(const unique_ptr<Node>& root)
@@ -102,3 +100,70 @@ vector<Implicant> getPrimeImplicants(const TruthTable& t)
     return prime;
 }
 
+set<int> make_union(const set<int>& x, const set<int>& y)
+{
+    set<int> xy;
+    set_union(x.begin(), x.end(), y.begin(), y.end(), inserter(xy, xy.begin()));
+    return xy;
+}
+
+set<set<int>> concatenation(set<set<int>> a, set<set<int>> b)
+{
+    set<set<int>> result;
+    for (auto x:a) {
+        for (auto y:b) {
+            auto xy = make_union(x, y);
+            set<set<int>> new_res(result);
+            bool take_xy = true;
+
+            for (auto i:result) {
+                auto test = make_union(i, xy);
+                if (test==xy)
+                    take_xy = false;
+                else if (test==i) {
+                    new_res.erase(i);
+                }
+            }
+            result.swap(new_res);
+            if (take_xy)
+                result.insert(xy);
+        }
+    }
+    return result;
+}
+
+vector<vector<Implicant>> PetricksMethod(const TruthTable& t)
+{
+    vector<Implicant> fdnf = getFDNF(t);
+    vector<Implicant> prime = getPrimeImplicants(t);
+
+    set<set<set<int>>> expr;
+
+    for (auto i:fdnf) {
+        set<set<int>> mult;
+        int index = 0;
+        for (auto p:prime) {
+            if (p.covers(i))
+                mult.insert({index});
+            index++;
+        }
+        expr.insert(mult);
+    }
+    while (expr.size()>1) {
+        auto a = *expr.begin();
+        auto b = *(++expr.begin());
+        expr.erase(expr.begin(), ++ ++expr.begin());
+
+        auto c = concatenation(a, b);
+        expr.insert(c);
+    }
+    vector<vector<Implicant>> final;
+    for (auto x: *expr.begin()) {
+        vector<Implicant> finalForm;
+        for (auto val:x)
+            finalForm.push_back(prime[val]);
+        final.push_back(finalForm);
+    }
+
+    return final;
+}

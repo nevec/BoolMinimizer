@@ -56,9 +56,8 @@ public:
     bool covers(const Implicant& o) const
     {
         for (int i = 0; i<(int) state.size(); ++i)
-            if (state[i]==1 && o.state[i]!=1)
+            if ((state[i]!=2 && state[i]!=o.state[i]))
                 return false;
-
         return true;
     }
 
@@ -89,14 +88,15 @@ public:
     friend ostream& operator<<(ostream& os, const Implicant& implicant)
     {
         size_t n = implicant.state.size();
-
+        os << " (";
         for (int i = n-1; i>=0; --i) {
             if (implicant.state[i]==0) {
-                os << "!" << n-i << " ";
+                os << "!" << n-i << ((i!=0) ? " ^ " : "");
             }
             else if (implicant.state[i]==1)
-                os << n-i << " ";
+                os << n-i << ((i!=0) ? " ^ " : "");
         }
+        os << ") ";
         return os;
     }
 
@@ -119,5 +119,7 @@ public:
 TruthTable createTable(const unique_ptr<Node>& root);
 
 vector<Implicant> getPrimeImplicants(const TruthTable& t);
+
+vector<vector<Implicant>> PetricksMethod(const TruthTable& t);
 
 #endif //KURSACH_MINIMIZER_H
