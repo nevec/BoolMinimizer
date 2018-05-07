@@ -22,7 +22,7 @@ public:
     TruthTable(set<string> vars, vector<bool> table)
             :vars(move(vars)), table(move(table)) { }
 
-    TruthTable(const unique_ptr<Node>& root)
+    explicit TruthTable(const unique_ptr<Node>& root)
     {
         root->addVariable(vars);
         size_t n = vars.size();
@@ -41,7 +41,7 @@ public:
         }
     }
 
-    TruthTable(const string& s)
+    explicit TruthTable(const string& s)
     {
         int n;
         for (n = 1; (1 << n)<s.size(); ++n);
@@ -54,8 +54,14 @@ public:
             vars.insert(string("x")+to_string(i+1));
 
         for (int i = 0; i<s.size(); ++i) {
-            if (s[i]=='1')
-                table[i] = true;
+            if (s[i]=='1') {
+                int j = 0;
+                for (int ind = 0; ind<n; ++ind)
+                    if (i & (1 << ind))
+                        j |= (1 << (n-1-ind));
+                table[j] = true;
+
+            }
             else if (s[i]!='0')
                 throw invalid_argument("wrong format");
         }
