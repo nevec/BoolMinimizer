@@ -3,29 +3,6 @@
 
 using namespace std;
 
-TruthTable createTable(const unique_ptr<Node>& root)
-{
-    set<string> vars;
-    vector<bool> table; // interpretations encoded in binary form
-
-    root->addVariable(vars);
-    size_t n = vars.size();
-    size_t nInterpr = (size_t) 1 << n;
-
-    table.resize(nInterpr);
-
-    map<string, bool> interpretation;
-    for (size_t i = 0; i<nInterpr; ++i) {
-        size_t k = 0;
-        for (const auto& var: vars) {
-            interpretation[var] = bool(i & ((size_t) 1 << k));
-            ++k;
-        }
-        table[i] = root->evaluate(interpretation);
-    }
-    return TruthTable(vars, table);
-}
-
 vector<Implicant> getFDNF(const TruthTable& t) //  full disjunctive normal form
 {
     vector<bool> table(t.getTable());
@@ -100,7 +77,7 @@ vector<Implicant> getPrimeImplicants(const vector<Implicant>& fdnf, size_t n)
     return prime;
 }
 
-set<int> make_union(const set<int>& x, const set<int>& y)
+set<int> makeUnion(const set<int>& x, const set<int>& y)
 {
     set<int> xy;
     set_union(x.begin(), x.end(), y.begin(), y.end(), inserter(xy, xy.begin()));
@@ -112,12 +89,12 @@ set<set<int>> concatenation(const set<set<int>>& a, const set<set<int>>& b)
     set<set<int>> result;
     for (auto x:a) {
         for (auto y:b) {
-            auto xy = make_union(x, y);
+            auto xy = makeUnion(x, y);
             set<set<int>> new_res(result);
             bool take_xy = true;
 
             for (auto i:result) {
-                auto test = make_union(i, xy);
+                auto test = makeUnion(i, xy);
                 if (test==xy)
                     take_xy = false;
                 else if (test==i) {

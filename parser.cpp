@@ -48,13 +48,6 @@ unique_ptr<Node> parseValue(Tokenizer& t)
 unique_ptr<Node> parseExpression(Tokenizer& t)
 {
     Token top = t.next();
-//    if (top.getType() == TokenType::Operation && top.getValue() == "!") {
-//        t.popNext();
-//        auto val = parseValue(t);
-//        auto result = unique_ptr<Operation>(new Operation(top));
-//        result->addArg(move(val));
-//        return move(result);
-//    } else {
     auto val = parseValue(t);
     if (t.hasNext()) {
         Token op = t.next();
@@ -82,7 +75,6 @@ unique_ptr<Node> parseExpression(Tokenizer& t)
     else {
         return val;
     }
-//    }
 }
 
 unique_ptr<Node> parse(Tokenizer& t)

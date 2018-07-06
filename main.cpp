@@ -22,8 +22,9 @@ TruthTable tryParse(const string& s)
     }
 }
 
-int main()
+int main(int argc, const char** argv)
 {
+    cout << "Boolean expressions minimizer [Version 1.01]\n(c) 2018 Roman Zhytar. All rights reserved.\n\n";
     while (true) {
         cout << "Enter expression (q for quit, h for help): ";
         string s;
@@ -32,11 +33,11 @@ int main()
             return 0;
         if (s=="h") {
             cout
-                    << "This program minimizes expressions of boolean algebra using Quine-McCluskey algorithm and Petrick's method.\n"
+                    << "\nThis program minimizes expressions of boolean algebra using Quine-McCluskey algorithm and Petrick's method.\n"
                        " There\'re 2 supported input formats:\n";
             cout << "1. Sequence of 1s and 0s from the last column of truth table.\n";
             cout << "2. Algebraic expression in standard notation. Conventions:\n"
-                 << "\t(A,B,C..) - variables\n\t! NOT\n\t^  AND\n\tv  OR\n\t@  XOR\n\t-  ->(implication)" << endl;
+                 << "\t(A,B,C..) - variables\n\t! NOT\n\t^  AND\n\tv  OR\n\t@  XOR\n\t-  ->(implication)\n" << endl;
             continue;
         }
         TruthTable table;
@@ -44,7 +45,7 @@ int main()
             table = tryParse(s);
         }
         catch (exception& e) {
-            cout << "Bad expression. Try again\n";
+            cout << "\nBad expression. Try again\n" << endl;
             continue;
         }
 
@@ -66,6 +67,7 @@ int main()
                 prettyPrint(form, table.getVars(), cout);
                 cout << endl;
             }
+            cout << endl;
         }
     }
 
